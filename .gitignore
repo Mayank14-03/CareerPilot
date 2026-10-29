@@ -1,0 +1,24 @@
+# Environment variables and secrets
+.env
+.env.*
+
+# Keep an example configuration file if needed
+!.env.example
+
+# Python virtual environment
+.venv/
+venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Test and coverage cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE and OS files
+.vscode/
+.DS_Store
+Thumbs.db
