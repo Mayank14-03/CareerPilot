@@ -3,13 +3,15 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.database import Base, engine, get_db
-from app.models import Job
+from app.models import Job, JobApplication  
 from app.services.skill_analyzer import analyze_skills
 from app.services.resume_parser import extract_skills
 from app.services.recommendation_engine import generate_recommendations
 
 from io import BytesIO
 from pypdf import PdfReader
+from datetime import date
+from typing import Literal
 
 
 Base.metadata.create_all(bind=engine)
@@ -31,6 +33,13 @@ class JobCreate(BaseModel):
     job_title: str = Field(min_length=1, max_length=100)
     description: str = Field(min_length=1)
     required_skills: list[str] = Field(min_length=1)
+
+class JobApplicationCreate(BaseModel):
+    company_name: str = Field(min_length=1, max_length=100)
+    job_title: str = Field(min_length=1, max_length=100)
+    application_date: date = Field(default_factory=date.today)
+    status: Literal["Applied", "Interview", "Rejected", "Offer"] = "Applied"
+    notes: str | None = None
 
 
 @app.get("/")
@@ -137,6 +146,115 @@ def create_job(
 
     return db_job
 
+@app.post("/applications", status_code=201)
+def create_application(
+    application: JobApplicationCreate,
+    db: Session = Depends(get_db),
+):
+    application_data = application.model_dump()
+
+    application_data["company_name"] = application_data["company_name"].strip()
+    application_data["job_title"] = application_data["job_title"].strip()
+
+    if not application_data["company_name"] or not application_data["job_title"]:
+        raise HTTPException(
+            status_code=422,
+            detail="Company name and job title cannot be blank.",
+        )
+
+    db_application = JobApplication(**application_data)
+
+    db.add(db_application)
+    db.commit()
+    db.refresh(db_application)
+
+    return db_application
+
+@app.get("/applications")
+def list_applications(
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(JobApplication)
+        .order_by(JobApplication.id.desc())
+        .all()
+    )
+
+@app.get("/applications/{application_id}")
+def get_application(
+    application_id: int,
+    db: Session = Depends(get_db),
+):
+    application = db.get(JobApplication, application_id)
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Job application not found.",
+        )
+
+    return application
+
+class JobApplicationUpdate(BaseModel):
+    company_name: str = Field(min_length=1, max_length=100)
+    job_title: str = Field(min_length=1, max_length=100)
+    application_date: date
+    status: Literal["Applied", "Interview", "Rejected", "Offer"]
+    notes: str | None = None
+
+
+@app.put("/applications/{application_id}")
+def update_application(
+    application_id: int,
+    updated_application: JobApplicationUpdate,
+    db: Session = Depends(get_db),
+):
+    application = db.get(JobApplication, application_id)
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Job application not found.",
+        )
+
+    application_data = updated_application.model_dump()
+    application_data["company_name"] = application_data["company_name"].strip()
+    application_data["job_title"] = application_data["job_title"].strip()
+
+    if not application_data["company_name"] or not application_data["job_title"]:
+        raise HTTPException(
+            status_code=422,
+            detail="Company name and job title cannot be blank.",
+        )
+
+    for field, value in application_data.items():
+        setattr(application, field, value)
+
+    db.commit()
+    db.refresh(application)
+
+    return application
+
+@app.delete("/applications/{application_id}")
+def delete_application(
+    application_id: int,
+    db: Session = Depends(get_db),
+):
+    application = db.get(JobApplication, application_id)
+
+    if application is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Job application not found.",
+        )
+
+    db.delete(application)
+    db.commit()
+
+    return {
+        "message": "Job application deleted successfully.",
+        "application_id": application_id,
+    }
 
 @app.get("/jobs")
 def list_jobs(db: Session = Depends(get_db)):

@@ -178,4 +178,211 @@ def test_analyze_resume_returns_recommendations():
     finally:
         app.dependency_overrides.clear()
 
+def test_create_application():
+    from unittest.mock import MagicMock
 
+    mock_db = MagicMock()
+
+    def refresh_application(application):
+        application.id = 1
+
+    mock_db.refresh.side_effect = refresh_application
+
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    try:
+        response = client.post(
+            "/applications",
+            json={
+                "company_name": "ASW Technologies",
+                "job_title": "Junior Python Developer",
+                "application_date": "2026-10-30",
+                "status": "Applied",
+                "notes": "Applied through HR email.",
+            },
+        )
+
+        assert response.status_code == 201
+
+        data = response.json()
+
+        assert data["id"] == 1
+        assert data["company_name"] == "ASW Technologies"
+        assert data["job_title"] == "Junior Python Developer"
+        assert data["status"] == "Applied"
+        assert data["notes"] == "Applied through HR email."
+
+        mock_db.add.assert_called_once()
+        mock_db.commit.assert_called_once()
+
+    finally:
+        app.dependency_overrides.clear()
+
+def test_list_applications():
+    from datetime import date
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+
+    mock_db = MagicMock()
+
+    mock_application = SimpleNamespace(
+        id=1,
+        company_name="ASW Technologies",
+        job_title="Junior Python Developer",
+        application_date=date(2026, 10, 30),
+        status="Applied",
+        notes="Applied through HR email.",
+    )
+
+    mock_db.query.return_value.order_by.return_value.all.return_value = [
+        mock_application
+    ]
+
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    try:
+        response = client.get("/applications")
+
+        assert response.status_code == 200
+
+        data = response.json()
+
+        assert len(data) == 1
+        assert data[0]["id"] == 1
+        assert data[0]["company_name"] == "ASW Technologies"
+        assert data[0]["status"] == "Applied"
+
+    finally:
+        app.dependency_overrides.clear()
+
+def test_get_application_by_id():
+    from datetime import date
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+
+    mock_db = MagicMock()
+
+    mock_application = SimpleNamespace(
+        id=1,
+        company_name="ASW Technologies",
+        job_title="Junior Python Developer",
+        application_date=date(2026, 10, 30),
+        status="Applied",
+        notes="Applied through HR email.",
+    )
+
+    mock_db.get.return_value = mock_application
+
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    try:
+        response = client.get("/applications/1")
+
+        assert response.status_code == 200
+
+        data = response.json()
+
+        assert data["id"] == 1
+        assert data["company_name"] == "ASW Technologies"
+        assert data["job_title"] == "Junior Python Developer"
+        assert data["status"] == "Applied"
+
+        mock_db.get.assert_called_once()
+
+    finally:
+        app.dependency_overrides.clear()
+
+def test_get_nonexistent_application():
+    from unittest.mock import MagicMock
+
+    mock_db = MagicMock()
+    mock_db.get.return_value = None
+
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    try:
+        response = client.get("/applications/999999")
+
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Job application not found."
+
+    finally:
+        app.dependency_overrides.clear()
+
+def test_update_application():
+    from datetime import date
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+
+    mock_db = MagicMock()
+
+    mock_application = SimpleNamespace(
+        id=1,
+        company_name="ASW Technologies",
+        job_title="Junior Python Developer",
+        application_date=date(2026, 10, 30),
+        status="Applied",
+        notes="Applied through HR email.",
+    )
+
+    mock_db.get.return_value = mock_application
+
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    try:
+        response = client.put(
+            "/applications/1",
+            json={
+                "company_name": "ASW Technologies",
+                "job_title": "Junior Python Developer",
+                "application_date": "2026-10-30",
+                "status": "Interview",
+                "notes": "Interview scheduled.",
+            },
+        )
+
+        assert response.status_code == 200
+
+        data = response.json()
+
+        assert data["id"] == 1
+        assert data["status"] == "Interview"
+        assert data["notes"] == "Interview scheduled."
+
+        mock_db.commit.assert_called_once()
+
+    finally:
+        app.dependency_overrides.clear()
+
+def test_delete_application():
+    from datetime import date
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+
+    mock_db = MagicMock()
+
+    mock_application = SimpleNamespace(
+        id=1,
+        company_name="ASW Technologies",
+        job_title="Junior Python Developer",
+        application_date=date(2026, 10, 30),
+        status="Applied",
+        notes="Applied through HR email.",
+    )
+
+    mock_db.get.return_value = mock_application
+
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    try:
+        response = client.delete("/applications/1")
+
+        assert response.status_code == 200
+        
+        assert response.json()["message"] == "Job application deleted successfully."
+
+        mock_db.delete.assert_called_once_with(mock_application)
+        mock_db.commit.assert_called_once()
+
+    finally:
+        app.dependency_overrides.clear()
