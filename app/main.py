@@ -1,6 +1,10 @@
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from sqlalchemy import func
+from pathlib import Path
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, engine, get_db
 from app.models import Job, JobApplication  
@@ -22,6 +26,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
+BASE_DIR = Path(__file__).resolve().parent
+
+app.mount(
+    "/static",
+    StaticFiles(directory=BASE_DIR / "static"),
+    name="static",
+)
 
 class SkillAnalysisRequest(BaseModel):
     candidate_skills: list[str]
@@ -179,6 +190,37 @@ def list_applications(
         .order_by(JobApplication.id.desc())
         .all()
     )
+
+@app.get("/applications/stats")
+def get_application_stats(
+    db: Session = Depends(get_db),
+):
+    total_applications = db.query(JobApplication).count()
+
+    status_counts = {
+        "Applied": 0,
+        "Interview": 0,
+        "Rejected": 0,
+        "Offer": 0,
+    }
+
+    results = (
+        db.query(
+            JobApplication.status,
+            func.count(JobApplication.id),
+        )
+        .group_by(JobApplication.status)
+        .all()
+    )
+
+    for status, count in results:
+        status_counts[status] = count
+
+    return {
+        "total_applications": total_applications,
+        "status_counts": status_counts,
+    }
+
 
 @app.get("/applications/{application_id}")
 def get_application(
@@ -450,3 +492,7 @@ async def analyze_resume_for_job(
         "match_percentage": analysis["match_percentage"],
         "recommendations": recommendations,
     }
+
+@app.get("/dashboard")
+def dashboard():
+    return FileResponse(BASE_DIR / "templates" / "dashboard.html")

@@ -1,0 +1,570 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerPilot | Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div>
+            <h1>CareerPilot</h1>
+            <p>Job Application Dashboard</p>
+        </div>
+
+        <a href="/docs" target="_blank" class="api-link">
+            API Documentation
+        </a>
+    </header>
+
+    <main class="container">
+
+        <!-- Welcome Section -->
+        <section class="welcome">
+            <h2>Welcome to your Dashboard</h2>
+            <p>Track your job applications and monitor your progress.</p>
+
+            <button id="showFormBtn" class="add-btn">
+                + Add New Application
+            </button>
+        </section>
+
+        <!-- Add / Edit Application Form -->
+        <section id="applicationForm" class="panel form-panel" hidden>
+
+            <h2 id="formTitle">Add New Job Application</h2>
+
+            <form id="newApplicationForm">
+
+                <div class="form-group">
+                    <label for="companyName">Company Name</label>
+                    <input
+                        type="text"
+                        id="companyName"
+                        required
+                        placeholder="e.g. GlobalLogic"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="jobTitle">Job Title</label>
+                    <input
+                        type="text"
+                        id="jobTitle"
+                        required
+                        placeholder="e.g. Python Developer"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="applicationDate">Application Date</label>
+                    <input type="date" id="applicationDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="applicationStatus">Status</label>
+                    <select id="applicationStatus">
+                        <option value="Applied">Applied</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Offer">Offer</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="applicationNotes">Notes (Optional)</label>
+                    <textarea
+                        id="applicationNotes"
+                        placeholder="Add additional details"
+                    ></textarea>
+                </div>
+
+                <p id="formMessage" class="form-message"></p>
+
+                <div class="form-actions">
+                    <button type="submit" class="save-btn">
+                        Save Application
+                    </button>
+
+                    <button
+                        type="button"
+                        id="cancelFormBtn"
+                        class="cancel-btn"
+                    >
+                        Cancel
+                    </button>
+                </div>
+
+            </form>
+        </section>
+
+        <!-- Dashboard Statistics -->
+        <section class="stats-grid">
+
+            <div class="stat-card">
+                <h3>Total Applications</h3>
+                <p id="totalApplications">0</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Applied</h3>
+                <p id="appliedCount">0</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Interviews</h3>
+                <p id="interviewCount">0</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Offers</h3>
+                <p id="offerCount">0</p>
+            </div>
+
+        </section>
+
+        <!-- Application Status Chart -->
+        <section class="panel">
+            <h2>Application Status</h2>
+            <div id="statusChart" class="status-chart"></div>
+        </section>
+
+        <!-- Applications Table -->
+        <section class="panel">
+            <h2>Recent Job Applications</h2>
+
+            <div class="table-wrapper">
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Job Title</th>
+                            <th>Application Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="applicationsTable">
+                        <tr>
+                            <td colspan="5">Loading applications...</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+
+        // DOM Elements
+        const showFormBtn = document.getElementById("showFormBtn");
+        const cancelFormBtn = document.getElementById("cancelFormBtn");
+        const applicationForm = document.getElementById("applicationForm");
+        const newApplicationForm = document.getElementById("newApplicationForm");
+        const formMessage = document.getElementById("formMessage");
+        const applicationDate = document.getElementById("applicationDate");
+        const formTitle = document.getElementById("formTitle");
+
+        const saveButton = newApplicationForm.querySelector(
+            'button[type="submit"]'
+        );
+
+        // Track currently edited application
+        let editingApplicationId = null;
+
+
+        // Set Today's Date
+        function setTodayDate() {
+            applicationDate.value = new Date().toLocaleDateString("en-CA");
+        }
+
+        setTodayDate();
+
+
+        // Reset Form
+        function resetApplicationForm() {
+            newApplicationForm.reset();
+
+            editingApplicationId = null;
+
+            formTitle.textContent = "Add New Job Application";
+            saveButton.textContent = "Save Application";
+
+            formMessage.textContent = "";
+            formMessage.className = "form-message";
+
+            setTodayDate();
+        }
+
+
+        // Open Add Application Form
+        showFormBtn.addEventListener("click", () => {
+
+            resetApplicationForm();
+
+            applicationForm.hidden = false;
+
+            applicationForm.scrollIntoView({
+                behavior: "smooth"
+            });
+
+        });
+
+
+        // Close Application Form
+        cancelFormBtn.addEventListener("click", () => {
+
+            applicationForm.hidden = true;
+
+            resetApplicationForm();
+
+        });
+
+
+        // Edit Application
+        function editApplication(application) {
+
+            editingApplicationId = application.id;
+
+            formTitle.textContent = "Edit Job Application";
+            saveButton.textContent = "Update Application";
+
+            document.getElementById("companyName").value =
+                application.company_name || "";
+
+            document.getElementById("jobTitle").value =
+                application.job_title || "";
+
+            applicationDate.value =
+                application.application_date || "";
+
+            document.getElementById("applicationStatus").value =
+                application.status || "Applied";
+
+            document.getElementById("applicationNotes").value =
+                application.notes || "";
+
+            formMessage.textContent = "";
+            formMessage.className = "form-message";
+
+            applicationForm.hidden = false;
+
+            applicationForm.scrollIntoView({
+                behavior: "smooth"
+            });
+
+        }
+
+
+        // Delete Application
+        async function deleteApplication(applicationId) {
+
+            const confirmed = confirm(
+                "Are you sure you want to delete this application?"
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+
+                const response = await fetch(
+                    `/applications/${applicationId}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.detail || "Unable to delete application."
+                    );
+                }
+
+                alert("Application deleted successfully!");
+
+                await loadDashboard();
+
+            } catch (error) {
+
+                alert(error.message);
+
+            }
+
+        }
+
+
+        // Submit Add / Edit Application Form
+        newApplicationForm.addEventListener("submit", async (event) => {
+
+            event.preventDefault();
+
+            const applicationData = {
+
+                company_name: document.getElementById("companyName").value.trim(),
+
+                job_title: document.getElementById("jobTitle").value.trim(),
+
+                application_date: applicationDate.value,
+
+                status: document.getElementById("applicationStatus").value,
+
+                notes: document.getElementById("applicationNotes").value.trim() || null
+
+            };
+
+            const isEditing = editingApplicationId !== null;
+
+            const url = isEditing
+                ? `/applications/${editingApplicationId}`
+                : "/applications";
+
+            const method = isEditing ? "PUT" : "POST";
+
+            try {
+
+                saveButton.disabled = true;
+
+                saveButton.textContent = isEditing
+                    ? "Updating..."
+                    : "Saving...";
+
+                const response = await fetch(url, {
+
+                    method: method,
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(applicationData)
+
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.detail || "Unable to save application."
+                    );
+                }
+
+                const successMessage = isEditing
+                    ? "Application updated successfully!"
+                    : "Application added successfully!";
+
+                formMessage.textContent = successMessage;
+                formMessage.className = "form-message success-message";
+
+                applicationForm.hidden = true;
+
+                resetApplicationForm();
+
+                await loadDashboard();
+
+            } catch (error) {
+
+                formMessage.textContent = error.message;
+                formMessage.className = "form-message error-message";
+
+            } finally {
+
+                saveButton.disabled = false;
+
+                saveButton.textContent = editingApplicationId !== null
+                    ? "Update Application"
+                    : "Save Application";
+
+            }
+
+        });
+
+
+        // Load Dashboard Data
+        async function loadDashboard() {
+
+            try {
+
+                // Fetch Application Statistics
+                const statsResponse = await fetch("/applications/stats");
+
+                if (!statsResponse.ok) {
+                    throw new Error("Unable to load application statistics.");
+                }
+
+                const stats = await statsResponse.json();
+
+                document.getElementById("totalApplications").textContent =
+                    stats.total_applications;
+
+                document.getElementById("appliedCount").textContent =
+                    stats.status_counts.Applied;
+
+                document.getElementById("interviewCount").textContent =
+                    stats.status_counts.Interview;
+
+                document.getElementById("offerCount").textContent =
+                    stats.status_counts.Offer;
+
+
+                // Generate Application Status Chart
+                const chart = document.getElementById("statusChart");
+
+                chart.innerHTML = "";
+
+                const statuses = stats.status_counts;
+
+                for (const [status, count] of Object.entries(statuses)) {
+
+                    const row = document.createElement("div");
+                    row.className = "chart-row";
+
+                    const label = document.createElement("span");
+                    label.textContent = status;
+
+                    const barContainer = document.createElement("div");
+                    barContainer.className = "bar-container";
+
+                    const bar = document.createElement("div");
+                    bar.className = "bar " + status.toLowerCase();
+
+                    bar.style.width = stats.total_applications > 0
+                        ? (count / stats.total_applications) * 100 + "%"
+                        : "0%";
+
+                    barContainer.appendChild(bar);
+
+                    const value = document.createElement("strong");
+                    value.textContent = count;
+
+                    row.append(label, barContainer, value);
+
+                    chart.appendChild(row);
+
+                }
+
+
+                // Fetch Job Applications
+                const applicationsResponse = await fetch("/applications");
+
+                if (!applicationsResponse.ok) {
+                    throw new Error("Unable to load job applications.");
+                }
+
+                const applications = await applicationsResponse.json();
+
+                const table = document.getElementById("applicationsTable");
+
+                table.innerHTML = "";
+
+
+                // Handle Empty Applications
+                if (applications.length === 0) {
+
+                    table.innerHTML =
+                        '<tr><td colspan="5">No applications found.</td></tr>';
+
+                    return;
+
+                }
+
+
+                // Populate Applications Table
+                applications.forEach((application) => {
+
+                    const row = document.createElement("tr");
+
+                    const values = [
+                        application.company_name,
+                        application.job_title,
+                        application.application_date,
+                        application.status
+                    ];
+
+                    values.forEach((value, index) => {
+
+                        const cell = document.createElement("td");
+
+                        cell.textContent = value ?? "-";
+
+                        if (index === 3) {
+
+                            const badge = document.createElement("span");
+
+                            badge.className =
+                                "status-badge " + String(value).toLowerCase();
+
+                            badge.textContent = value ?? "-";
+
+                            cell.textContent = "";
+
+                            cell.appendChild(badge);
+
+                        }
+
+                        row.appendChild(cell);
+
+                    });
+
+
+                    // Actions Column
+                    const actionsCell = document.createElement("td");
+
+                    const editButton = document.createElement("button");
+
+                    editButton.textContent = "Edit";
+                    editButton.className = "edit-btn";
+
+                    editButton.addEventListener("click", () => {
+                        editApplication(application);
+                    });
+
+
+                    const deleteButton = document.createElement("button");
+
+                    deleteButton.textContent = "Delete";
+                    deleteButton.className = "delete-btn";
+
+                    deleteButton.addEventListener("click", () => {
+                        deleteApplication(application.id);
+                    });
+
+
+                    actionsCell.append(editButton, deleteButton);
+
+                    row.appendChild(actionsCell);
+
+                    table.appendChild(row);
+
+                });
+
+            } catch (error) {
+
+                console.error("Dashboard loading error:", error);
+
+                document.getElementById("applicationsTable").innerHTML =
+                    '<tr><td colspan="5">Unable to load dashboard data.</td></tr>';
+
+            }
+
+        }
+
+
+        // Load Dashboard on Page Start
+        loadDashboard();
+
+    </script>
+
+</body>
+</html>

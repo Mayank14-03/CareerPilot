@@ -386,3 +386,40 @@ def test_delete_application():
 
     finally:
         app.dependency_overrides.clear()
+
+def test_application_stats():
+    from unittest.mock import MagicMock
+
+    mock_db = MagicMock()
+
+    total_query = MagicMock()
+    total_query.count.return_value = 3
+
+    status_query = MagicMock()
+    status_query.group_by.return_value.all.return_value = [
+        ("Applied", 2),
+        ("Interview", 1),
+    ]
+
+    mock_db.query.side_effect = [
+        total_query,
+        status_query,
+    ]
+
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    try:
+        response = client.get("/applications/stats")
+
+        assert response.status_code == 200
+
+        data = response.json()
+
+        assert data["total_applications"] == 3
+        assert data["status_counts"]["Applied"] == 2
+        assert data["status_counts"]["Interview"] == 1
+        assert data["status_counts"]["Rejected"] == 0
+        assert data["status_counts"]["Offer"] == 0
+
+    finally:
+        app.dependency_overrides.clear()
