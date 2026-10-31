@@ -343,3 +343,67 @@ th {
         width: 100%;
     }
 }
+
+/* Action Buttons Container */
+#applicationsTable td:last-child {
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+/* Common Action Button Styles */
+#applicationsTable .edit-btn,
+#applicationsTable .delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
+    margin: 2px 4px 2px 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Edit Button */
+#applicationsTable .edit-btn {
+    color: #2457c5;
+    background-color: #eaf1ff;
+    border-color: #d4e2ff;
+}
+
+#applicationsTable .edit-btn:hover {
+    background-color: #d6e4ff;
+    border-color: #a9c5ff;
+    transform: translateY(-1px);
+}
+
+/* Delete Button */
+#applicationsTable .delete-btn {
+    color: #c62828;
+    background-color: #fff0f0;
+    border-color: #ffd6d6;
+}
+
+#applicationsTable .delete-btn:hover {
+    background-color: #ffe0e0;
+    border-color: #ffb3b3;
+    transform: translateY(-1px);
+}
+
+/* Keyboard Accessibility */
+#applicationsTable .edit-btn:focus-visible,
+#applicationsTable .delete-btn:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+/* Disabled Button */
+#applicationsTable .edit-btn:disabled,
+#applicationsTable .delete-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
