@@ -16,6 +16,30 @@ The CareerPilot dashboard provides an overview of job applications, application 
 ![CareerPilot Dashboard](screenshots/dashboard.png)
 
 
+
+
+## Project Architecture
+
+```mermaid
+flowchart TD
+    A["User"] --> B["CareerPilot Dashboard<br/>HTML, CSS, JavaScript"]
+    B --> C["FastAPI Backend"]
+
+    C --> D["Resume Parser"]
+    C --> E["Skill Analyzer"]
+    C --> F["Recommendation Engine"]
+    C --> G["Job Application APIs"]
+
+    D --> E
+    E --> F
+
+    C --> H["SQLAlchemy ORM"]
+    H --> I[("PostgreSQL Database")]
+
+    J["Pytest"] -.-> C
+```
+
+
 ### Resume & Skill Analysis
 - **Resume Parsing:** Extract text and identify skills from PDF resumes.
 - **Skill Gap Analysis:** Compare candidate skills with job requirements.
