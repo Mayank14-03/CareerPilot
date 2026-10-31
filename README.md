@@ -9,6 +9,13 @@ The project also includes an interactive dashboard to track application statisti
 
 ## Features
 
+## Dashboard Preview
+
+The CareerPilot dashboard provides an overview of job applications, application statuses, and recent activities.
+
+![CareerPilot Dashboard](screenshots/dashboard.png)
+
+
 ### Resume & Skill Analysis
 - **Resume Parsing:** Extract text and identify skills from PDF resumes.
 - **Skill Gap Analysis:** Compare candidate skills with job requirements.
