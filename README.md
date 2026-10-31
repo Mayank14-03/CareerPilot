@@ -1,47 +1,84 @@
+
 # CareerPilot — Intelligent Job Application & Skill Gap Analyzer
 
-CareerPilot is a Python-based application that helps candidates analyze their skills against job requirements. It extracts skills from resumes, calculates skill-match percentages, identifies missing skills, and recommends areas for improvement.
+CareerPilot is a Python-based job application tracking and skill gap analysis platform built using FastAPI and PostgreSQL.
+
+It helps candidates manage job applications, extract skills from PDF resumes, compare their skills with job requirements, calculate skill-match percentages, identify missing skills, and receive learning recommendations.
+
+The project also includes an interactive dashboard to track application statistics and manage job applications.
 
 ## Features
 
+### Resume & Skill Analysis
 - **Resume Parsing:** Extract text and identify skills from PDF resumes.
 - **Skill Gap Analysis:** Compare candidate skills with job requirements.
-- **Match Percentage:** Calculate how closely a candidate's skills match a job.
-- **Learning Recommendations:** Suggest learning priorities for missing skills.
-- **Job Management:** Create, view, update, and delete job records.
-- **REST API:** Access application functionality through FastAPI endpoints.
-- **Database Integration:** Store job information in PostgreSQL.
-- **Automated Testing:** Validate application functionality using pytest.
+- **Match Percentage:** Calculate how closely candidate skills match a job.
+- **Missing Skills Identification:** Highlight skills that need improvement.
+- **Learning Recommendations:** Suggest learning priorities based on missing skills.
+
+### Job Application Management
+- **Create Applications:** Add company, job title, application date, status, and notes.
+- **View Applications:** Retrieve saved job application records.
+- **Update Applications:** Edit existing application details.
+- **Delete Applications:** Remove application records.
+- **Application Statistics:** Track total applications and application statuses.
+
+### Interactive Dashboard
+- View total applications and status-wise counts.
+- Visualize application status through a chart.
+- Add, edit, and delete applications directly from the dashboard.
+- View recent job application records.
+
+### Backend & Testing
+- REST API development using FastAPI.
+- PostgreSQL database integration.
+- SQLAlchemy ORM.
+- Automated API and service testing using pytest.
 
 ## Technology Stack
 
-- **Language:** Python
-- **API Framework:** FastAPI
-- **Database:** PostgreSQL
-- **ORM:** SQLAlchemy
-- **Resume Processing:** pypdf
-- **Validation and Configuration:** Pydantic Settings
-- **Testing:** pytest and HTTPX
-- **Development Tools:** VS Code, Git, GitHub
+| Category | Technologies |
+|---|---|
+| Programming Language | Python 3.12 |
+| Backend Framework | FastAPI |
+| Database | PostgreSQL |
+| ORM | SQLAlchemy |
+| Data Validation | Pydantic |
+| Configuration | Pydantic Settings |
+| Resume Processing | pypdf |
+| Frontend | HTML, CSS, JavaScript |
+| API Documentation | Swagger UI |
+| Testing | pytest, HTTPX |
+| Tools | VS Code, Git, GitHub |
 
 ## Project Structure
 
 ```text
 CareerPilot_Python_Project/
+│
 ├── app/
 │   ├── services/
 │   │   ├── recommendation_engine.py
 │   │   ├── resume_parser.py
 │   │   └── skill_analyzer.py
+│   │
+│   ├── static/
+│   │   └── style.css
+│   │
+│   ├── templates/
+│   │   └── dashboard.html
+│   │
 │   ├── __init__.py
 │   ├── database.py
 │   ├── main.py
 │   └── models.py
+│
 ├── tests/
 │   ├── test_api.py
 │   ├── test_recommendation_engine.py
 │   ├── test_resume_parser.py
 │   └── test_skill_analyzer.py
+│
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
@@ -56,55 +93,67 @@ CareerPilot_Python_Project/
 
 ## Setup and Installation
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Mayank14-03/CareerPilot.git
+
 cd CareerPilot
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Create and Activate Virtual Environment
 
-On Windows PowerShell:
+Windows PowerShell:
 
 ```powershell
 python -m venv .venv
+
 .\.venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
+### 4. Configure Environment Variables
 
-Create a `.env` file in the project root and configure the database connection using your local PostgreSQL credentials.
+Create a `.env` file in the project root.
 
-Example format:
+Configure your PostgreSQL database connection:
 
 ```env
 DATABASE_URL=postgresql+psycopg://careerpilot_user:YOUR_PASSWORD@localhost:5432/careerpilot_db
 ```
 
-Replace `YOUR_PASSWORD` with your own PostgreSQL password. Never commit your actual `.env` file or credentials to GitHub.
+Replace `YOUR_PASSWORD` with your local PostgreSQL password.
 
-### 5. Start the application
+Ensure that:
+- PostgreSQL is running.
+- The database exists.
+- The configured database user has the required permissions.
+
+**Important:** Never commit your actual `.env` file or database credentials to GitHub.
+
+### 5. Start the Application
 
 ```powershell
 python -m uvicorn app.main:app --reload
 ```
 
-The API will be available at:
+The application will be available at:
 
-- **Base URL:** http://127.0.0.1:8000
-- **Interactive API Documentation:** http://127.0.0.1:8000/docs
-- **Health Check:** http://127.0.0.1:8000/health
-
-Ensure PostgreSQL is running and the database is configured before starting the application.
+| Resource | URL |
+|---|---|
+| Base API | http://127.0.0.1:8000 |
+| Interactive API Documentation | http://127.0.0.1:8000/docs |
+| Health Check | http://127.0.0.1:8000/health |
+| Dashboard | http://127.0.0.1:8000/dashboard |
 
 ## API Endpoints
+
+### General & Resume APIs
 
 | Method | Endpoint | Purpose |
 |---|---|---|
@@ -112,6 +161,11 @@ Ensure PostgreSQL is running and the database is configured before starting the 
 | GET | `/health` | Health check |
 | POST | `/resume/extract` | Extract information from a resume |
 | POST | `/analyze-skills` | Analyze candidate skills |
+
+### Job Management APIs
+
+| Method | Endpoint | Purpose |
+|---|---|---|
 | POST | `/jobs` | Create a job |
 | GET | `/jobs` | List jobs |
 | GET | `/jobs/{job_id}` | Get a job by ID |
@@ -120,35 +174,62 @@ Ensure PostgreSQL is running and the database is configured before starting the 
 | POST | `/jobs/{job_id}/analyze` | Analyze skills against a saved job |
 | POST | `/jobs/{job_id}/analyze-resume` | Analyze a resume against a saved job |
 
-## Run Tests
+### Job Application APIs
 
-Run the automated test suite from the project root:
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/applications` | Create a job application |
+| GET | `/applications` | List job applications |
+| GET | `/applications/{application_id}` | Get an application by ID |
+| PUT | `/applications/{application_id}` | Update an application |
+| DELETE | `/applications/{application_id}` | Delete an application |
+| GET | `/applications/stats` | Get application statistics |
+
+### Dashboard
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/dashboard` | Access the interactive dashboard |
+
+## Run Automated Tests
+
+Run the test suite from the project root:
 
 ```powershell
 python -m pytest -v
 ```
 
-The current test suite contains 16 passing tests.
+**Latest test result: 23 passed.**
+
+Test coverage includes:
+- API endpoint testing.
+- Job application CRUD operations.
+- Application statistics.
+- Resume skill extraction.
+- Skill gap analysis.
+- Skill-based recommendations.
 
 ## Learning Outcomes
 
 This project demonstrates practical experience with:
 
-- Python application development
-- REST API development using FastAPI
-- PostgreSQL database integration
-- PDF text extraction and skill identification
-- Set-based skill matching and match-percentage calculation
-- Recommendation logic
-- Automated testing
-- Git and GitHub version control
+- Python application development.
+- REST API development using FastAPI.
+- PostgreSQL database integration.
+- SQLAlchemy ORM.
+- PDF text extraction and skill identification.
+- Skill matching and match-percentage calculation.
+- Recommendation engine development.
+- HTML, CSS, and JavaScript dashboard development.
+- CRUD operations.
+- Automated testing using pytest.
+- Git and GitHub version control.
 
 ## Future Enhancements
 
-- Add a web-based user interface.
+- Add user authentication and candidate profiles.
 - Improve resume parsing and skill recognition.
 - Integrate job-board data sources.
-- Add user authentication and candidate profiles.
 - Expand personalized learning recommendations.
 
 ## Author
@@ -161,4 +242,4 @@ GitHub: [Mayank14-03](https://github.com/Mayank14-03)
 
 ---
 
-*CareerPilot is a portfolio project developed for learning and demonstrating Python development skills.*
+*CareerPilot is a portfolio project developed for learning and demonstrating Python backend development skills.*
