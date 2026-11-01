@@ -39,6 +39,53 @@ flowchart TD
     J["Pytest"] -.-> C
 ```
 
+## API Documentation
+
+CareerPilot provides REST APIs for resume analysis, skill gap analysis, job management, and job application tracking.
+
+Interactive API documentation is available through Swagger UI:
+
+`http://127.0.0.1:8000/docs`
+
+### Create a Job Application
+
+**Endpoint:** `POST /applications`
+
+**Request Body:**
+
+```json
+{
+  "company_name": "Example Technologies",
+  "job_title": "Python Developer",
+  "application_date": "2026-11-02",
+  "status": "Applied",
+  "notes": "Applied through the company careers page"
+}
+```
+
+**Successful Response:** `201 Created`
+
+### Other Application Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/applications` | Retrieve all applications |
+| GET | `/applications/{application_id}` | Retrieve a specific application |
+| PUT | `/applications/{application_id}` | Update an application |
+| DELETE | `/applications/{application_id}` | Delete an application |
+| GET | `/applications/stats` | Retrieve application statistics |
+
+### Skill Gap Analysis
+
+**Endpoint:** `POST /analyze-skills`
+
+Compares candidate skills with required skills and returns matched skills, missing skills, and a match percentage.
+
+### Resume Parsing
+
+**Endpoint:** `POST /resume/extract`
+
+Extracts text and skills from an uploaded resume PDF.
 
 ### Resume & Skill Analysis
 - **Resume Parsing:** Extract text and identify skills from PDF resumes.
