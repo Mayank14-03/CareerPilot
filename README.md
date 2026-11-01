@@ -7,6 +7,14 @@ It helps candidates manage job applications, extract skills from PDF resumes, co
 
 The project also includes an interactive dashboard to track application statistics and manage job applications.
 
+## 🚀 Live Demo
+
+- **Live Dashboard:** https://careerpilot-tf3a.onrender.com/dashboard
+- **API Documentation (Swagger):** https://careerpilot-tf3a.onrender.com/docs
+- **GitHub Repository:** https://github.com/Mayank14-03/CareerPilot
+
+> Note: The application is deployed on Render's free tier. The service may take some time to start after inactivity.
+
 ## Features
 
 ## Dashboard Preview
@@ -45,7 +53,8 @@ CareerPilot provides REST APIs for resume analysis, skill gap analysis, job mana
 
 Interactive API documentation is available through Swagger UI:
 
-`http://127.0.0.1:8000/docs`
+- **Live API (Render):** https://careerpilot-tf3a.onrender.com/docs
+- **Local API:** http://127.0.0.1:8000/docs
 
 ### Create a Job Application
 
@@ -93,6 +102,37 @@ Extracts text and skills from an uploaded resume PDF.
 - **Match Percentage:** Calculate how closely candidate skills match a job.
 - **Missing Skills Identification:** Highlight skills that need improvement.
 - **Learning Recommendations:** Suggest learning priorities based on missing skills.
+
+## ☁️ Deployment & Live API Testing
+
+CareerPilot is deployed on Render with a PostgreSQL database.
+
+**Deployment Platform:** Render  
+**Backend:** FastAPI  
+**Database:** PostgreSQL  
+**Deployment Status:** Live
+
+### Verified API Tests
+
+| Feature | Endpoint | Result |
+|---|---|---|
+| Application Health | `GET /health` | Passed |
+| Create Job Application | `POST /applications` | Passed |
+| Update Job Application | `PUT /applications/{id}` | Passed |
+| Delete Job Application | `DELETE /applications/{id}` | Passed |
+| Resume Skill Extraction | `POST /resume/extract` | Passed |
+| Skill Gap Analysis | `POST /analyze-skills` | Passed |
+| Job Skill Analysis | `POST /jobs/{id}/analyze` | Passed |
+| Resume-Based Job Analysis | `POST /jobs/{id}/analyze-resume` | Passed |
+
+### Sample Resume Analysis Result
+
+- Resume skills detected: 19
+- Job role: Junior Python Developer
+- Skill match: 85.71%
+- Missing skill: Django
+- Recommendation: Learn Django fundamentals, models, views, URL routing, and CRUD operations.
+
 
 ### Job Application Management
 - **Create Applications:** Add company, job title, application date, status, and notes.
